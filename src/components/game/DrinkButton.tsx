@@ -18,7 +18,7 @@ export default function DrinkButton({ onClick }: Props) {
         active:scale-95
       "
     >
-      🍺 飲食する +1
+      飲食+1
     </button>
   );
 }

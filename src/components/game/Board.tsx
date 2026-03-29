@@ -2,7 +2,6 @@ import {
   ActivePiece,
   Board as BoardType,
   CellValue,
-  TetrominoType,
 } from "@/features/game/types";
 import { getShape } from "@/features/game/tetrominoes";
 
@@ -105,14 +104,14 @@ export default function Board({ board, activePiece }: Props) {
             return (
               <div
                 key={`${x}-${y}`}
-                className={`h-5 w-5 rounded-[4px] border border-zinc-600 sm:h-6 sm:w-6 ${
-                    getCellColor(displayType)
+                className={`h-7 w-7 rounded-[4px] border border-zinc-600 sm:h-6 sm:w-6 ${
+                  getCellColor(displayType)
                 } ${
-                    displayType !== 0 ? getCellGlow(displayType) : ""
+                  displayType !== 0 ? getCellGlow(displayType) : ""
                 } ${
-                    isActive ? "scale-[1.02] ring-1 ring-white/30" : ""
+                  isActive ? "scale-[1.02] ring-1 ring-white/30" : ""
                 }`}
-                />
+              />
             );
           })
         )}

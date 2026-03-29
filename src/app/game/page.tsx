@@ -174,11 +174,17 @@ export default function GamePage() {
 
         <section className="rounded-3xl border border-white/10 bg-white/5 p-4 shadow-xl backdrop-blur-sm">
           <div className="flex items-start justify-center gap-4">
-            <div className="rounded-2xl bg-zinc-900/80 p-3">
-              <HoldPanel
-                holdBlock={state.holdBlock}
-                canHold={state.gameStatus === "placing" ? state.canHold : true}
-              />
+            <div className="flex w-28 shrink-0 flex-col gap-4">
+              <div className="rounded-2xl bg-zinc-900/80 p-3">
+                <HoldPanel
+                  holdBlock={state.holdBlock}
+                  canHold={state.gameStatus === "placing" ? state.canHold : true}
+                />
+              </div>
+
+              <div className="rounded-2xl bg-zinc-900/80 p-3">
+                <DrinkButton onClick={() => dispatch({ type: "ADD_DRINK" })} />
+              </div>
             </div>
 
             <div className="rounded-2xl bg-zinc-900/80 p-3 shadow-inner">
@@ -189,10 +195,6 @@ export default function GamePage() {
               <Board board={state.board} activePiece={state.activePiece} />
             </div>
           </div>
-        </section>
-
-        <section className="rounded-3xl border border-white/10 bg-white/5 p-4 shadow-xl backdrop-blur-sm">
-          <DrinkButton onClick={() => dispatch({ type: "ADD_DRINK" })} />
         </section>
 
         <section className="rounded-3xl border border-white/10 bg-white/5 p-4 shadow-xl backdrop-blur-sm">

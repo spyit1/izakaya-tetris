@@ -173,8 +173,8 @@ export default function GamePage() {
         )}
 
         <section className="rounded-3xl border border-white/10 bg-white/5 p-4 shadow-xl backdrop-blur-sm">
-          <div className="flex items-start justify-center gap-4">
-            <div className="flex w-28 shrink-0 flex-col gap-4">
+          <div className="flex items-start gap-3 sm:gap-4">
+            <div className="flex w-24 shrink-0 flex-col gap-3 sm:w-28 sm:gap-4">
               <div className="rounded-2xl bg-zinc-900/80 p-3">
                 <HoldPanel
                   holdBlock={state.holdBlock}
@@ -187,7 +187,7 @@ export default function GamePage() {
               </div>
             </div>
 
-            <div className="rounded-2xl bg-zinc-900/80 p-3 shadow-inner">
+            <div className="min-w-0 flex-1 rounded-2xl bg-zinc-900/80 p-2 sm:p-3 shadow-inner">
               <div className="mb-2 text-xs text-zinc-400">
                 rows: {state.board.length} / cols: {state.board[0]?.length ?? 0}
               </div>

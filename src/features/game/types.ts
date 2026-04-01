@@ -20,6 +20,8 @@ export type ModalType =
   | "draw-result"
   | "any-select";
 
+export type DrawSource = "drink" | "stock" | null;
+
 export type CellValue = 0 | TetrominoType;
 export type Board = CellValue[][];
 
@@ -54,6 +56,7 @@ export type GameState = {
 
   gameStatus: GameStatus;
   modal: ModalType;
+  drawSource: DrawSource;
 
   clearedLines: number;
   usedDrinks: number;
@@ -69,7 +72,12 @@ export type GameAction =
   | { type: "SET_INITIAL_USED_ROWS"; rows: number }
   | { type: "RESET_GAME_WITH_SETTINGS" }
   | { type: "ADD_DRINK" }
-  | { type: "CHOOSE_DRINK_ACTION"; choice: "draw-now" | "store" }
+  | {
+      type: "CHOOSE_DRINK_ACTION";
+      choice: "draw-now" | "draw-with-exclude" | "store";
+    }
+  | { type: "START_DRAW_FROM_STOCK" }
+  | { type: "CHOOSE_STOCK_DRAW_MODE"; mode: "normal" | "exclude" }
   | { type: "EXCLUDE_CARD"; card: CardType }
   | { type: "TO_DRAW_STEP" }
   | { type: "PICK_HIDDEN_CARD"; id: string }
@@ -82,7 +90,7 @@ export type GameAction =
   | { type: "USE_HOLD" }
   | { type: "TICK_ELAPSED_TIME" }
   | { type: "TICK_PLACEMENT_TIMER" }
-  | { type: "TIMEOUT_RANDOM_PLACE" }
+  | { type: "TIMEOUT_PLACE_CURRENT" }
   | { type: "SKIP_TURN" }
   | { type: "CLOSE_MODAL" }
   | { type: "RESET_DRAW_TEMP" };

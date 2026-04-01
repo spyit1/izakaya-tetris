@@ -18,7 +18,7 @@ import { initialState } from "@/features/game/initialState";
 import { gameReducer } from "@/features/game/reducer";
 
 const STORAGE_KEY = "izakaya-tetorisu-save";
-const DIFFICULTY_OPTIONS = [0, 3, 6, 9, 12, 15, 18];
+const DIFFICULTY_OPTIONS = [0, 3, 6, 9, 12, 15];
 
 export default function GamePage() {
   const router = useRouter();
@@ -72,7 +72,7 @@ export default function GamePage() {
     if (state.gameStatus !== "placing") return;
 
     if (state.placementTimeLeft <= 0) {
-      dispatch({ type: "TIMEOUT_RANDOM_PLACE" });
+      dispatch({ type: "TIMEOUT_PLACE_CURRENT" });
       return;
     }
 
@@ -86,6 +86,12 @@ export default function GamePage() {
   if (!mounted || !loaded) {
     return null;
   }
+
+  const canUseStockDraw =
+    state.stock > 0 &&
+    state.gameStatus !== "placing" &&
+    state.gameStatus !== "drawing" &&
+    state.gameStatus !== "excluding";
 
   return (
     <main className="min-h-screen bg-[radial-gradient(circle_at_top,_#27272a_0%,_#18181b_35%,_#09090b_100%)] px-4 py-6 text-white">
@@ -174,11 +180,32 @@ export default function GamePage() {
 
         <section className="rounded-3xl border border-white/10 bg-white/5 p-4 shadow-xl backdrop-blur-sm">
           <div className="flex items-start justify-center gap-4">
-            <div className="rounded-2xl bg-zinc-900/80 p-3">
-              <HoldPanel
-                holdBlock={state.holdBlock}
-                canHold={state.gameStatus === "placing" ? state.canHold : true}
-              />
+            <div className="flex w-[120px] flex-col gap-3">
+              <div className="rounded-2xl bg-zinc-900/80 p-3">
+                <HoldPanel
+                  holdBlock={state.holdBlock}
+                  canHold={state.gameStatus === "placing" ? state.canHold : true}
+                />
+              </div>
+
+              <div className="rounded-2xl bg-zinc-900/80 p-3 shadow-inner">
+                <div className="flex flex-col gap-3">
+                  <DrinkButton onClick={() => dispatch({ type: "ADD_DRINK" })} />
+
+                  <button
+                    type="button"
+                    onClick={() => dispatch({ type: "START_DRAW_FROM_STOCK" })}
+                    disabled={!canUseStockDraw}
+                    className={`w-full rounded-2xl px-3 py-3 text-xs font-black leading-tight transition ${
+                      canUseStockDraw
+                        ? "bg-amber-400 text-zinc-950 hover:bg-amber-300 active:scale-[0.99]"
+                        : "cursor-not-allowed bg-zinc-800 text-zinc-500"
+                    }`}
+                  >
+                    ストックを使って引く
+                  </button>
+                </div>
+              </div>
             </div>
 
             <div className="rounded-2xl bg-zinc-900/80 p-3 shadow-inner">
@@ -189,10 +216,6 @@ export default function GamePage() {
               <Board board={state.board} activePiece={state.activePiece} />
             </div>
           </div>
-        </section>
-
-        <section className="rounded-3xl border border-white/10 bg-white/5 p-4 shadow-xl backdrop-blur-sm">
-          <DrinkButton onClick={() => dispatch({ type: "ADD_DRINK" })} />
         </section>
 
         <section className="rounded-3xl border border-white/10 bg-white/5 p-4 shadow-xl backdrop-blur-sm">
@@ -210,9 +233,26 @@ export default function GamePage() {
         <DrinkChoiceModal
           open={state.modal === "drink-choice"}
           stock={state.stock}
-          onDrawNow={() =>
-            dispatch({ type: "CHOOSE_DRINK_ACTION", choice: "draw-now" })
-          }
+          drawSource={state.drawSource}
+          onDrawNow={() => {
+            if (state.drawSource === "stock") {
+              dispatch({ type: "CHOOSE_STOCK_DRAW_MODE", mode: "normal" });
+              return;
+            }
+
+            dispatch({ type: "CHOOSE_DRINK_ACTION", choice: "draw-now" });
+          }}
+          onDrawWithExclude={() => {
+            if (state.drawSource === "stock") {
+              dispatch({ type: "CHOOSE_STOCK_DRAW_MODE", mode: "exclude" });
+              return;
+            }
+
+            dispatch({
+              type: "CHOOSE_DRINK_ACTION",
+              choice: "draw-with-exclude",
+            });
+          }}
           onStore={() =>
             dispatch({ type: "CHOOSE_DRINK_ACTION", choice: "store" })
           }
@@ -247,6 +287,7 @@ export default function GamePage() {
 
         <AnySelectModal
           open={state.modal === "any-select"}
+          board={state.board}
           onSelect={(block) => dispatch({ type: "SELECT_ANY_BLOCK", block })}
         />
 

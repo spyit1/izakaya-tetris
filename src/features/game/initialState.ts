@@ -17,6 +17,7 @@ export const initialState: GameState = {
 
   gameStatus: "setup",
   modal: "none",
+  drawSource: null,
 
   clearedLines: 0,
   usedDrinks: 0,

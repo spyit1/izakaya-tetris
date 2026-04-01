@@ -2,7 +2,6 @@ import {
   clearFullLines,
   createActivePiece,
   createInitialBoard,
-  getRandomLegalPlacement,
   mergePieceIntoBoard,
   movePieceHorizontally,
   rotatePiece,
@@ -10,9 +9,7 @@ import {
 import { CARD_ORDER, createHiddenCards, getAvailableCards } from "./draw";
 import { initialState } from "./initialState";
 import { PLACEMENT_LIMIT } from "./tetrominoes";
-import { GameAction, GameState, TetrominoType } from "./types";
-
-import { Board } from "./types";
+import { Board, GameAction, GameState, TetrominoType } from "./types";
 
 function isBoardEmpty(board: Board): boolean {
   return board.every((row) => row.every((cell) => cell === 0));
@@ -109,6 +106,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
         ...initialState,
         ...action.payload,
         initialUsedRows: action.payload.initialUsedRows ?? 0,
+        drawSource: action.payload.drawSource ?? null,
       };
 
     case "SET_INITIAL_USED_ROWS":
@@ -117,20 +115,18 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
         initialUsedRows: Math.max(0, Math.min(action.rows, 18)),
       };
 
-    case "RESET_GAME_WITH_SETTINGS": {
-        const adjustedRows = state.initialUsedRows *2;
-
-        return {
-            ...initialState,
-            board: createInitialBoard(state.initialUsedRows),
-            initialUsedRows: state.initialUsedRows,
-            gameStatus: "idle",
-            modal: "none",
-            stock: 0,
-            usedDrinks: 0,
-            elapsedTime: 0,
-        };
-    }
+    case "RESET_GAME_WITH_SETTINGS":
+      return {
+        ...initialState,
+        board: createInitialBoard(state.initialUsedRows),
+        initialUsedRows: state.initialUsedRows,
+        gameStatus: "idle",
+        modal: "none",
+        stock: 0,
+        usedDrinks: 0,
+        elapsedTime: 0,
+        drawSource: null,
+      };
 
     case "ADD_DRINK":
       return {
@@ -139,6 +135,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
         usedDrinks: state.usedDrinks + 1,
         gameStatus: "drink-choice",
         modal: "drink-choice",
+        drawSource: "drink",
       };
 
     case "CHOOSE_DRINK_ACTION":
@@ -147,6 +144,25 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
           ...state,
           gameStatus: "idle",
           modal: "none",
+          drawSource: null,
+        };
+      }
+
+      if (action.choice === "draw-with-exclude") {
+        if (state.stock < 1) {
+          return state;
+        }
+
+        return {
+          ...state,
+          excludedCards: [],
+          hiddenCards: [],
+          drawnCard: null,
+          currentBlock: null,
+          activePiece: null,
+          gameStatus: "excluding",
+          modal: "exclude",
+          drawSource: "drink",
         };
       }
 
@@ -154,7 +170,46 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
         return state;
       }
 
-      if (state.stock >= 2) {
+      return {
+        ...state,
+        excludedCards: [],
+        hiddenCards: createHiddenCards(CARD_ORDER),
+        drawnCard: null,
+        currentBlock: null,
+        activePiece: null,
+        stock: state.stock - 1,
+        gameStatus: "drawing",
+        modal: "draw-pick",
+        drawSource: "drink",
+      };
+
+    case "START_DRAW_FROM_STOCK":
+      if (state.stock <= 0) {
+        return state;
+      }
+
+      return {
+        ...state,
+        excludedCards: [],
+        hiddenCards: [],
+        drawnCard: null,
+        currentBlock: null,
+        activePiece: null,
+        gameStatus: "drink-choice",
+        modal: "drink-choice",
+        drawSource: "stock",
+      };
+
+    case "CHOOSE_STOCK_DRAW_MODE":
+      if (state.drawSource !== "stock") {
+        return state;
+      }
+
+      if (action.mode === "exclude") {
+        if (state.stock < 2) {
+          return state;
+        }
+
         return {
           ...state,
           excludedCards: [],
@@ -165,6 +220,10 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
           gameStatus: "excluding",
           modal: "exclude",
         };
+      }
+
+      if (state.stock < 1) {
+        return state;
       }
 
       return {
@@ -184,11 +243,17 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
         return state;
       }
 
-      if (state.stock <= 1) {
-        return state;
+      if (state.excludedCards.includes(action.card)) {
+        return {
+          ...state,
+          stock: state.stock + 1,
+          excludedCards: state.excludedCards.filter(
+            (card) => card !== action.card
+          ),
+        };
       }
 
-      if (state.excludedCards.includes(action.card)) {
+      if (state.stock <= 1) {
         return state;
       }
 
@@ -298,6 +363,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
           placementTimeLeft: PLACEMENT_LIMIT,
           canHold: true,
           clearedLines: state.clearedLines + clearedCount,
+          drawSource: null,
         };
 
         return checkCleared(nextState);
@@ -326,6 +392,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
           excludedCards: [],
           hiddenCards: [],
           drawnCard: null,
+          drawSource: null,
         };
       }
 
@@ -361,28 +428,13 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
         placementTimeLeft: Math.max(0, state.placementTimeLeft - 1),
       };
 
-    case "TIMEOUT_RANDOM_PLACE":
-      if (state.gameStatus !== "placing" || !state.currentBlock) {
+    case "TIMEOUT_PLACE_CURRENT":
+      if (state.gameStatus !== "placing" || !state.activePiece) {
         return state;
       }
 
       {
-        const randomPlacement = getRandomLegalPlacement(
-          state.board,
-          state.currentBlock
-        );
-
-        if (!randomPlacement) {
-          return {
-            ...state,
-            gameStatus: "gameover",
-            modal: "none",
-            activePiece: null,
-            currentBlock: null,
-          };
-        }
-
-        const mergedBoard = mergePieceIntoBoard(state.board, randomPlacement);
+        const mergedBoard = mergePieceIntoBoard(state.board, state.activePiece);
         const { board, clearedCount } = clearFullLines(mergedBoard);
 
         const nextState: GameState = {
@@ -398,6 +450,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
           placementTimeLeft: PLACEMENT_LIMIT,
           canHold: true,
           clearedLines: state.clearedLines + clearedCount,
+          drawSource: null,
         };
 
         return checkCleared(nextState);
@@ -413,6 +466,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
         excludedCards: [],
         gameStatus: "idle",
         modal: "none",
+        drawSource: null,
       });
 
     case "CLOSE_MODAL":
@@ -427,6 +481,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
         excludedCards: [],
         drawnCard: null,
         hiddenCards: [],
+        drawSource: null,
       };
 
     default:

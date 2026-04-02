@@ -256,6 +256,7 @@ export default function GamePage() {
           onStore={() =>
             dispatch({ type: "CHOOSE_DRINK_ACTION", choice: "store" })
           }
+          onBack={() => dispatch({ type: "CANCEL_DRINK_CHOICE" })}
         />
 
         <ExcludeCardsModal

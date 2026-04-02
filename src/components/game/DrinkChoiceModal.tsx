@@ -8,6 +8,7 @@ type Props = {
   onDrawNow: () => void;
   onDrawWithExclude: () => void;
   onStore: () => void;
+  onBack: () => void;
 };
 
 export default function DrinkChoiceModal({
@@ -17,53 +18,67 @@ export default function DrinkChoiceModal({
   onDrawNow,
   onDrawWithExclude,
   onStore,
+  onBack,
 }: Props) {
+  const canDrawNow = stock >= 1;
+  const canDrawWithExclude = stock >= 2;
   const isStockMode = drawSource === "stock";
-  const canExclude = isStockMode ? stock >= 2 : stock >= 1;
 
   return (
-    <Modal open={open} title={isStockMode ? "ストックを使って引く" : "飲食しました"}>
-      <div className="space-y-4">
-        <p className="text-sm text-zinc-300">
-          {isStockMode
-            ? `現在のストック: ${stock}`
-            : `ストックが1増えました。現在のストック: ${stock}`}
-        </p>
-
-        <div className="flex flex-col gap-2">
-          <button
-            type="button"
-            onClick={onDrawNow}
-            className="rounded-lg bg-yellow-500 px-4 py-2 font-semibold text-black"
-          >
-            {isStockMode ? "1ストック消費して引く" : "今すぐ引く"}
-          </button>
-
-          <button
-            type="button"
-            onClick={onDrawWithExclude}
-            disabled={!canExclude}
-            className={`rounded-lg px-4 py-2 font-semibold ${
-              canExclude
-                ? "bg-red-500 text-white"
-                : "bg-zinc-800 text-zinc-500"
-            }`}
-          >
-            {isStockMode
-              ? "2ストック消費して除外して引く"
-              : "1ストック消費して除外して引く"}
-          </button>
-
-          {!isStockMode && (
-            <button
-              type="button"
-              onClick={onStore}
-              className="rounded-lg bg-zinc-700 px-4 py-2 text-white"
-            >
-              ストックする
-            </button>
+    <Modal open={open} title="どうしますか？">
+      <div className="space-y-3">
+        <div className="text-sm text-zinc-300">
+          <p>現在のストック: {stock}</p>
+          {isStockMode ? (
+            <p>持っているストックを使ってカードを引けます。</p>
+          ) : (
+            <p>飲食しました。次の行動を選んでください。</p>
           )}
         </div>
+
+        <button
+          type="button"
+          onClick={onDrawNow}
+          disabled={!canDrawNow}
+          className={`w-full rounded-lg px-4 py-3 font-bold transition ${
+            canDrawNow
+              ? "bg-emerald-500 text-black hover:bg-emerald-400"
+              : "bg-zinc-800 text-zinc-500"
+          }`}
+        >
+          普通に引く（1ストック消費）
+        </button>
+
+        <button
+          type="button"
+          onClick={onDrawWithExclude}
+          disabled={!canDrawWithExclude}
+          className={`w-full rounded-lg px-4 py-3 font-bold transition ${
+            canDrawWithExclude
+              ? "bg-yellow-500 text-black hover:bg-yellow-400"
+              : "bg-zinc-800 text-zinc-500"
+          }`}
+        >
+          除外して引く（2ストック以上必要）
+        </button>
+
+        {isStockMode ? (
+          <button
+            type="button"
+            onClick={onBack}
+            className="w-full rounded-lg bg-zinc-700 px-4 py-3 font-bold text-white transition hover:bg-zinc-600"
+          >
+            戻る
+          </button>
+        ) : (
+          <button
+            type="button"
+            onClick={onStore}
+            className="w-full rounded-lg bg-sky-600 px-4 py-3 font-bold text-white transition hover:bg-sky-500"
+          >
+            今回は引かずにストックする
+          </button>
+        )}
       </div>
     </Modal>
   );

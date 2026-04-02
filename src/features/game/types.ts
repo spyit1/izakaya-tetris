@@ -78,6 +78,7 @@ export type GameAction =
     }
   | { type: "START_DRAW_FROM_STOCK" }
   | { type: "CHOOSE_STOCK_DRAW_MODE"; mode: "normal" | "exclude" }
+  | { type: "CANCEL_DRINK_CHOICE" }
   | { type: "EXCLUDE_CARD"; card: CardType }
   | { type: "TO_DRAW_STEP" }
   | { type: "PICK_HIDDEN_CARD"; id: string }

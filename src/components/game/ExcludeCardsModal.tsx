@@ -20,7 +20,7 @@ export default function ExcludeCardsModal({
   onExclude,
   onStartDraw,
 }: Props) {
-  const canExclude = stock > 1;
+  const canExcludeNewCard = stock > 1;
 
   return (
     <Modal open={open} title="除外するカードを選ぶ">
@@ -34,17 +34,18 @@ export default function ExcludeCardsModal({
         <div className="grid grid-cols-3 gap-2">
           {CARD_ORDER.map((card) => {
             const excluded = excludedCards.includes(card);
+            const canPress = excluded || canExcludeNewCard;
 
             return (
               <button
                 key={card}
                 type="button"
                 onClick={() => onExclude(card)}
-                disabled={!canExclude}
+                disabled={!canPress}
                 className={`rounded-lg border px-3 py-4 text-sm font-bold transition ${
                   excluded
                     ? "border-red-500 bg-red-950 text-red-300"
-                    : canExclude
+                    : canPress
                     ? "border-zinc-600 bg-zinc-800 text-white hover:bg-zinc-700"
                     : "border-zinc-800 bg-zinc-900 text-zinc-500"
                 }`}

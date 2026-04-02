@@ -238,6 +238,19 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
         modal: "draw-pick",
       };
 
+    case "CANCEL_DRINK_CHOICE":
+      return {
+        ...state,
+        excludedCards: [],
+        hiddenCards: [],
+        drawnCard: null,
+        currentBlock: null,
+        activePiece: null,
+        gameStatus: "idle",
+        modal: "none",
+        drawSource: null,
+      };
+
     case "EXCLUDE_CARD":
       if (state.gameStatus !== "excluding") {
         return state;

@@ -89,9 +89,12 @@ export default function GamePage() {
 
   const canUseStockDraw =
     state.stock > 0 &&
+    state.gameStatus !== "setup" &&
     state.gameStatus !== "placing" &&
     state.gameStatus !== "drawing" &&
-    state.gameStatus !== "excluding";
+    state.gameStatus !== "excluding" &&
+    state.gameStatus !== "gameover" &&
+    state.gameStatus !== "cleared";
 
   return (
     <main className="min-h-screen bg-[radial-gradient(circle_at_top,_#27272a_0%,_#18181b_35%,_#09090b_100%)] px-4 py-6 text-white">
@@ -179,20 +182,33 @@ export default function GamePage() {
         )}
 
         <section className="rounded-3xl border border-white/10 bg-white/5 p-4 shadow-xl backdrop-blur-sm">
-          <div className="flex items-start justify-center gap-4">
-            <div className="rounded-2xl bg-zinc-900/80 p-3">
-              <HoldPanel
-                holdBlock={state.holdBlock}
-                canHold={state.gameStatus === "placing" ? state.canHold : true}
-              />
-            </div>
+          <div className="flex items-start gap-4">
+            <div className="flex shrink-0 flex-col gap-3">
+              <div className="rounded-2xl bg-zinc-900/80 p-3">
+                <HoldPanel
+                  holdBlock={state.holdBlock}
+                  canHold={
+                    state.gameStatus === "placing" ? state.canHold : true
+                  }
+                />
+              </div>
 
               <div className="rounded-2xl bg-zinc-900/80 p-3">
                 <DrinkButton onClick={() => dispatch({ type: "ADD_DRINK" })} />
               </div>
+
+              {canUseStockDraw && (
+                <button
+                  type="button"
+                  onClick={() => dispatch({ type: "START_DRAW_FROM_STOCK" })}
+                  className="rounded-2xl bg-sky-500 px-4 py-3 text-sm font-black text-white transition hover:bg-sky-400 active:scale-[0.99]"
+                >
+                  ストックを使って引く
+                </button>
+              )}
             </div>
 
-            <div className="min-w-0 flex-1 rounded-2xl bg-zinc-900/80 p-2 sm:p-3 shadow-inner">
+            <div className="min-w-0 flex-1 rounded-2xl bg-zinc-900/80 p-2 shadow-inner sm:p-3">
               <div className="mb-2 text-xs text-zinc-400">
                 rows: {state.board.length} / cols: {state.board[0]?.length ?? 0}
               </div>
@@ -272,6 +288,7 @@ export default function GamePage() {
         <AnySelectModal
           open={state.modal === "any-select"}
           board={state.board}
+          activePiece={state.activePiece}
           onSelect={(block) => dispatch({ type: "SELECT_ANY_BLOCK", block })}
         />
 

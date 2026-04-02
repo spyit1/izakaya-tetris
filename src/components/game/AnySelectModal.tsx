@@ -4,17 +4,27 @@ import Modal from "@/components/ui/Modal";
 import TetrominoPreview from "@/components/game/TetrominoPreview";
 import Board from "@/components/game/Board";
 
-import { Board as BoardType, TetrominoType } from "@/features/game/types";
+import {
+  ActivePiece,
+  Board as BoardType,
+  TetrominoType,
+} from "@/features/game/types";
 
 type Props = {
   open: boolean;
   board: BoardType;
+  activePiece: ActivePiece | null;
   onSelect: (block: TetrominoType) => void;
 };
 
 const BLOCKS: TetrominoType[] = ["I", "J", "L", "O", "S", "T", "Z"];
 
-export default function AnySelectModal({ open, board, onSelect }: Props) {
+export default function AnySelectModal({
+  open,
+  board,
+  activePiece,
+  onSelect,
+}: Props) {
   const [showBoard, setShowBoard] = useState(false);
 
   useEffect(() => {
@@ -27,13 +37,16 @@ export default function AnySelectModal({ open, board, onSelect }: Props) {
     <Modal open={open} title={showBoard ? "現在の盤面" : "好きなブロックを選択"}>
       {showBoard ? (
         <div className="space-y-4">
-          <div className="mx-auto w-fit rounded-2xl bg-zinc-900/80 p-3 shadow-inner">
-            <Board board={board} activePiece={null} />
+          <div className="overflow-x-auto">
+            <div className="mx-auto w-[220px] sm:w-[260px] rounded-2xl bg-zinc-900/80 p-3 shadow-inner">
+              <Board board={board} activePiece={activePiece} />
+            </div>
           </div>
 
           <button
+            type="button"
             onClick={() => setShowBoard(false)}
-            className="w-full rounded-lg bg-zinc-700 px-4 py-2 text-white"
+            className="w-full rounded-lg bg-zinc-700 px-4 py-2 text-white transition hover:bg-zinc-600"
           >
             戻る
           </button>
@@ -41,8 +54,9 @@ export default function AnySelectModal({ open, board, onSelect }: Props) {
       ) : (
         <div className="space-y-4">
           <button
+            type="button"
             onClick={() => setShowBoard(true)}
-            className="w-full rounded-lg bg-sky-600 px-4 py-2 font-semibold text-white hover:bg-sky-500 transition"
+            className="w-full rounded-lg bg-sky-600 px-4 py-2 font-semibold text-white transition hover:bg-sky-500"
           >
             盤面を見る
           </button>
@@ -51,6 +65,7 @@ export default function AnySelectModal({ open, board, onSelect }: Props) {
             {BLOCKS.map((block) => (
               <button
                 key={block}
+                type="button"
                 onClick={() => onSelect(block)}
                 className="flex items-center justify-center rounded-lg bg-zinc-800 p-4 transition hover:bg-zinc-700"
               >

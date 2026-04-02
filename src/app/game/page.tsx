@@ -319,14 +319,27 @@ export default function GamePage() {
           </div>
         )}
 
+        {/* クリア時の全画面オーバーレイ */}
         {state.gameStatus === "cleared" && (
-          <div className="rounded-3xl border border-emerald-300/30 bg-emerald-400/10 px-6 py-5 text-center shadow-xl">
-            <p className="text-2xl font-black tracking-wide text-emerald-200">
-              CLEAR!!
-            </p>
-            <p className="mt-2 text-sm text-emerald-100/80">
-              盤面をきれいに片付けました
-            </p>
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-zinc-950/80 backdrop-blur-md animate-in fade-in duration-500">
+            <div className="text-center">
+              <div className="mb-4 inline-block rounded-full bg-emerald-500/20 px-6 py-2 text-emerald-400 border border-emerald-500/30 font-bold tracking-widest">
+                MISSION COMPLETE
+              </div>
+              <h2 className="text-7xl font-black italic tracking-tighter text-white sm:text-9xl">
+                CLEAR<span className="text-emerald-400">!!</span>
+              </h2>
+              <p className="mt-6 text-lg text-zinc-400">
+                お見事！盤面の底をぶち抜きました。
+              </p>
+              <button
+                type="button"
+                onClick={() => dispatch({ type: "RESET_GAME_WITH_SETTINGS" })}
+                className="mt-10 rounded-full bg-white px-10 py-4 text-xl font-black text-zinc-950 transition hover:scale-105 active:scale-95"
+              >
+                もう一度遊ぶ
+              </button>
+            </div>
           </div>
         )}
       </div>

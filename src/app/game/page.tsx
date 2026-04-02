@@ -183,13 +183,12 @@ export default function GamePage() {
 
         <section className="rounded-3xl border border-white/10 bg-white/5 p-4 shadow-xl backdrop-blur-sm">
           <div className="flex items-start gap-4">
-            <div className="flex shrink-0 flex-col gap-3">
+            {/* 左側のカラム: w-28 (112px) 程度に固定し、中身を中央寄せにする */}
+            <div className="flex w-28 shrink-0 flex-col gap-3">
               <div className="rounded-2xl bg-zinc-900/80 p-3">
                 <HoldPanel
                   holdBlock={state.holdBlock}
-                  canHold={
-                    state.gameStatus === "placing" ? state.canHold : true
-                  }
+                  canHold={state.gameStatus === "placing" ? state.canHold : true}
                 />
               </div>
 
@@ -197,22 +196,25 @@ export default function GamePage() {
                 <DrinkButton onClick={() => dispatch({ type: "ADD_DRINK" })} />
               </div>
 
+              {/* ボタンがある時も無い時も、親の w-28 が確保されているので
+                右側の Board のサイズは変わらなくなるよ 
+              */}
               {canUseStockDraw && (
                 <button
                   type="button"
                   onClick={() => dispatch({ type: "START_DRAW_FROM_STOCK" })}
-                  className="rounded-2xl bg-sky-500 px-4 py-3 text-sm font-black text-white transition hover:bg-sky-400 active:scale-[0.99]"
+                  className="rounded-2xl bg-sky-500 px-2 py-3 text-xs font-black text-white transition hover:bg-sky-400 active:scale-[0.99]"
                 >
-                  ストックを使って引く
+                  ストックで引く
                 </button>
               )}
             </div>
 
+            {/* 右側の盤面エリア */}
             <div className="min-w-0 flex-1 rounded-2xl bg-zinc-900/80 p-2 shadow-inner sm:p-3">
               <div className="mb-2 text-xs text-zinc-400">
                 rows: {state.board.length} / cols: {state.board[0]?.length ?? 0}
               </div>
-
               <Board board={state.board} activePiece={state.activePiece} />
             </div>
           </div>

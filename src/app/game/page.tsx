@@ -203,7 +203,7 @@ export default function GamePage() {
                   onClick={() => dispatch({ type: "START_DRAW_FROM_STOCK" })}
                   className="rounded-2xl bg-sky-500 px-4 py-3 text-sm font-black text-white transition hover:bg-sky-400 active:scale-[0.99]"
                 >
-                  ストックを使って引く
+                  ストックで引く
                 </button>
               )}
             </div>

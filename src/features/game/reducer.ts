@@ -11,17 +11,23 @@ import { initialState } from "./initialState";
 import { PLACEMENT_LIMIT } from "./tetrominoes";
 import { Board, GameAction, GameState, TetrominoType } from "./types";
 
-function isBoardEmpty(board: Board): boolean {
-  return board.every((row) => row.every((cell) => cell === 0));
-}
-
 function checkCleared(state: GameState): GameState {
-  const noPiece = state.activePiece === null;
-  const noCurrent = state.currentBlock === null;
-  const noStock = state.stock === 0;
-  const emptyBoard = isBoardEmpty(state.board);
+  // 初期配置がない（難易度0）の場合は、全消しをクリア条件にする（念のため）
+  if (state.initialUsedRows === 0) {
+    const emptyBoard = state.board.every((row) => row.every((cell) => cell === 0));
+    if (emptyBoard) return { ...state, gameStatus: "cleared" };
+    return state;
+  }
 
-  if (noPiece && noCurrent && noStock && emptyBoard) {
+  // 盤面の底から count 行目が「初期配置の最下行」
+  // 盤面が20行だとして、initialUsedRowsが3なら、index 17, 18, 19 が初期配置。
+  // そのうち「一番上」にある初期配置行（この場合は index 17）が消えればOKとするなら以下の通り
+  
+  // もし「物理的に一番下の行（index 19）」が消えたことを条件にするなら：
+  const targetRowIndex = state.board.length - 1; 
+  const isTargetRowEmpty = state.board[targetRowIndex].every(cell => cell === 0);
+
+  if (isTargetRowEmpty) {
     return {
       ...state,
       gameStatus: "cleared",
@@ -361,7 +367,23 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
 
       {
         const mergedBoard = mergePieceIntoBoard(state.board, state.activePiece);
+        // 【追加】消す前の状態で、一番下の行（Index 19）が全部埋まっているかチェック
+        const bottomRowIndex = mergedBoard.length - 1;
+        const isBottomRowFull = mergedBoard[bottomRowIndex].every(cell => cell !== 0);
+
         const { board, clearedCount } = clearFullLines(mergedBoard);
+
+        // 【判定】「もともと一番下が埋まっていて」かつ「ラインが1つ以上消えた」なら、
+        // 一番下の行が消去されたとみなしてクリア！
+        if (isBottomRowFull && clearedCount > 0) {
+          return {
+            ...state,
+            board,
+            gameStatus: "cleared",
+            modal: "none",
+            // ...他のリセット処理
+          };
+        }
 
         const nextState: GameState = {
           ...state,
@@ -448,7 +470,24 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
 
       {
         const mergedBoard = mergePieceIntoBoard(state.board, state.activePiece);
+
+        // 【追加】消す前の状態で、一番下の行（Index 19）が全部埋まっているかチェック
+        const bottomRowIndex = mergedBoard.length - 1;
+        const isBottomRowFull = mergedBoard[bottomRowIndex].every(cell => cell !== 0);
+
         const { board, clearedCount } = clearFullLines(mergedBoard);
+
+        // 【判定】「もともと一番下が埋まっていて」かつ「ラインが1つ以上消えた」なら、
+        // 一番下の行が消去されたとみなしてクリア！
+        if (isBottomRowFull && clearedCount > 0) {
+          return {
+            ...state,
+            board,
+            gameStatus: "cleared",
+            modal: "none",
+            // ...他のリセット処理
+          };
+        }
 
         const nextState: GameState = {
           ...state,

@@ -98,7 +98,7 @@ export default function GamePage() {
 
   return (
     <main className="min-h-screen bg-[radial-gradient(circle_at_top,_#27272a_0%,_#18181b_35%,_#09090b_100%)] px-4 py-6 text-white">
-      <div className="mx-auto flex max-w-md flex-col gap-4">
+      <div className="mx-auto flex max-w-lg flex-col gap-4">
         <button
           type="button"
           onClick={() => router.push("/")}
@@ -182,9 +182,9 @@ export default function GamePage() {
         )}
 
         <section className="rounded-3xl border border-white/10 bg-white/5 p-4 shadow-xl backdrop-blur-sm">
-          <div className="flex items-start gap-4">
-            <div className="flex shrink-0 flex-col gap-3">
-              <div className="rounded-2xl bg-zinc-900/80 p-3">
+          <div className="flex items-start gap-3">
+            <div className="flex w-24 shrink-0 flex-col gap-2">
+              <div className="rounded-xl bg-zinc-900/80 p-2">
                 <HoldPanel
                   holdBlock={state.holdBlock}
                   canHold={
@@ -193,7 +193,7 @@ export default function GamePage() {
                 />
               </div>
 
-              <div className="rounded-2xl bg-zinc-900/80 p-3">
+              <div className="rounded-xl bg-zinc-900/80 p-2">
                 <DrinkButton onClick={() => dispatch({ type: "ADD_DRINK" })} />
               </div>
 
@@ -201,14 +201,14 @@ export default function GamePage() {
                 <button
                   type="button"
                   onClick={() => dispatch({ type: "START_DRAW_FROM_STOCK" })}
-                  className="rounded-2xl bg-sky-500 px-4 py-3 text-sm font-black text-white transition hover:bg-sky-400 active:scale-[0.99]"
+                  className="rounded-xl bg-sky-500 px-2 py-2 text-xs font-bold text-white transition hover:bg-sky-400 active:scale-[0.99]"
                 >
                   ストックで引く
                 </button>
               )}
             </div>
 
-            <div className="min-w-0 flex-1 rounded-2xl bg-zinc-900/80 p-2 shadow-inner sm:p-3">
+            <div className="min-w-0 flex-1 rounded-2xl bg-zinc-900/80 p-1 shadow-inner">
               <div className="mb-2 text-xs text-zinc-400">
                 rows: {state.board.length} / cols: {state.board[0]?.length ?? 0}
               </div>

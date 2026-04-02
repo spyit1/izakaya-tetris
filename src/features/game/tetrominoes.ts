@@ -2,7 +2,7 @@ import { Point, TetrominoType } from "./types";
 
 export const BOARD_WIDTH = 10;
 export const BOARD_HEIGHT = 23;
-export const PLACEMENT_LIMIT = 12;
+export const PLACEMENT_LIMIT = 7;
 
 export const TETROMINO_SHAPES: Record<TetrominoType, Point[][]> = {
   I: [

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useReducer, useState } from "react";
+import { useEffect, useReducer, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 
 import AnySelectModal from "@/components/game/AnySelectModal";
@@ -26,6 +26,17 @@ export default function GamePage() {
   const [mounted, setMounted] = useState(false);
   const [loaded, setLoaded] = useState(false);
   const [state, dispatch] = useReducer(gameReducer, initialState);
+
+  const controlPadRef = useRef<HTMLElement | null>(null);
+
+  function scrollToControlPad() {
+    window.setTimeout(() => {
+      controlPadRef.current?.scrollIntoView({
+        behavior: "smooth",
+        block: "end",
+      });
+    }, 50);
+  }
 
   useEffect(() => {
     setMounted(true);
@@ -218,7 +229,10 @@ export default function GamePage() {
           </div>
         </section>
 
-        <section className="rounded-3xl border border-white/10 bg-white/5 p-4 shadow-xl backdrop-blur-sm">
+        <section
+          ref={controlPadRef}
+          className="rounded-3xl border border-white/10 bg-white/5 p-4 shadow-xl backdrop-blur-sm"
+        >
           <ControlPad
             visible={state.gameStatus === "placing"}
             onMoveLeft={() => dispatch({ type: "MOVE_LEFT" })}
@@ -283,6 +297,7 @@ export default function GamePage() {
             }
 
             dispatch({ type: "CLOSE_MODAL" });
+            scrollToControlPad();
           }}
         />
 

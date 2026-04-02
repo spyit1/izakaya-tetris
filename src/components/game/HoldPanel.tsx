@@ -9,7 +9,7 @@ type Props = {
 export default function HoldPanel({ holdBlock, canHold }: Props) {
   return (
     <div
-      className={`w-24 rounded-2xl border p-3 text-center transition ${
+      className={`w-full rounded-2xl border p-3 text-center transition ${
         canHold
           ? "border-emerald-400/40 bg-zinc-900 shadow-[0_0_15px_rgba(16,185,129,0.2)]"
           : "border-zinc-700 bg-zinc-800 opacity-70"

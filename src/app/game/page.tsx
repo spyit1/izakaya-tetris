@@ -180,35 +180,19 @@ export default function GamePage() {
 
         <section className="rounded-3xl border border-white/10 bg-white/5 p-4 shadow-xl backdrop-blur-sm">
           <div className="flex items-start justify-center gap-4">
-            <div className="flex w-[120px] flex-col gap-3">
+            <div className="rounded-2xl bg-zinc-900/80 p-3">
+              <HoldPanel
+                holdBlock={state.holdBlock}
+                canHold={state.gameStatus === "placing" ? state.canHold : true}
+              />
+            </div>
+
               <div className="rounded-2xl bg-zinc-900/80 p-3">
-                <HoldPanel
-                  holdBlock={state.holdBlock}
-                  canHold={state.gameStatus === "placing" ? state.canHold : true}
-                />
-              </div>
-
-              <div className="rounded-2xl bg-zinc-900/80 p-3 shadow-inner">
-                <div className="flex flex-col gap-3">
-                  <DrinkButton onClick={() => dispatch({ type: "ADD_DRINK" })} />
-
-                  <button
-                    type="button"
-                    onClick={() => dispatch({ type: "START_DRAW_FROM_STOCK" })}
-                    disabled={!canUseStockDraw}
-                    className={`w-full rounded-2xl px-3 py-3 text-xs font-black leading-tight transition ${
-                      canUseStockDraw
-                        ? "bg-amber-400 text-zinc-950 hover:bg-amber-300 active:scale-[0.99]"
-                        : "cursor-not-allowed bg-zinc-800 text-zinc-500"
-                    }`}
-                  >
-                    ストックを使って引く
-                  </button>
-                </div>
+                <DrinkButton onClick={() => dispatch({ type: "ADD_DRINK" })} />
               </div>
             </div>
 
-            <div className="rounded-2xl bg-zinc-900/80 p-3 shadow-inner">
+            <div className="min-w-0 flex-1 rounded-2xl bg-zinc-900/80 p-2 sm:p-3 shadow-inner">
               <div className="mb-2 text-xs text-zinc-400">
                 rows: {state.board.length} / cols: {state.board[0]?.length ?? 0}
               </div>

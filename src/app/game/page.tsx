@@ -295,9 +295,8 @@ export default function GamePage() {
               dispatch({ type: "SKIP_TURN" });
               return;
             }
-
+            // ここで CLOSE_MODAL を呼ぶことで、reducer側で status が placing に切り替わる
             dispatch({ type: "CLOSE_MODAL" });
-            scrollToControlPad();
           }}
         />
 

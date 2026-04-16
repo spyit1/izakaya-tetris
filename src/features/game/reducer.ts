@@ -93,15 +93,20 @@ function resolveDrawResult(
     };
   }
 
+  // ブロックが出た時、すぐに "placing" にせず、一旦モーダル表示用の状態にする
+  const activePiece = createActivePiece(state.board, card as TetrominoType);
+
   return {
-    ...startPlacingWithBlock(
-      {
-        ...state,
-        drawnCard: card,
-      },
-      card
-    ),
+    ...state,
     drawnCard: card,
+    currentBlock: card as TetrominoType,
+    activePiece,
+    hiddenCards: [],
+    // ここを "drawing" や別の待機状態のままにしておく
+    gameStatus: "drawing", 
+    modal: "draw-result",
+    placementTimeLeft: PLACEMENT_LIMIT,
+    canHold: true,
   };
 }
 
@@ -309,10 +314,33 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
     }
 
     case "SELECT_ANY_BLOCK":
-      return {
-        ...startPlacingWithBlock(state, action.block),
-        drawnCard: "ANY",
-      };
+      // startPlacingWithBlock を使うと gameStatus が "placing" になってしまうので、
+      // ここで直接状態をセットして、モーダルを表示する待機状態にするよ。
+      {
+        const activePiece = createActivePiece(state.board, action.block);
+        
+        // もし配置不可ならゲームオーバー
+        if (!activePiece) {
+          return {
+            ...state,
+            currentBlock: null,
+            activePiece: null,
+            gameStatus: "gameover",
+            modal: "none",
+          };
+        }
+
+        return {
+          ...state,
+          currentBlock: action.block,
+          activePiece,
+          drawnCard: action.block, // 選んだブロックを「引いたカード」として扱う
+          gameStatus: "drawing",   // まだ "placing" にしない！
+          modal: "draw-result",    // 結果確認モーダルを出す
+          placementTimeLeft: PLACEMENT_LIMIT,
+          canHold: true,
+        };
+      }
 
     case "MOVE_LEFT":
       if (state.gameStatus !== "placing" || !state.activePiece) {
@@ -414,6 +442,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
         return state;
       }
 
+      // 初めてのホールド（中身が空）の時
       if (state.holdBlock === null) {
         return {
           ...state,
@@ -431,18 +460,20 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
         };
       }
 
+      // すでにホールドにブロックがある時（中身を入れ替える時）
       {
         const nextBlock = state.holdBlock;
-        const nextState = startPlacingWithBlock(
-          {
-            ...state,
-            holdBlock: state.currentBlock,
-          },
-          nextBlock
-        );
+        const activePiece = createActivePiece(state.board, nextBlock);
 
         return {
-          ...nextState,
+          ...state,
+          holdBlock: state.currentBlock, // 現在のをホールドへ
+          currentBlock: nextBlock,       // ホールドにあったのを現在へ
+          activePiece,
+          drawnCard: nextBlock,          // 【追加】確認用にくじ引きと同じようにセット
+          gameStatus: "drawing",         // 【変更】操作中(placing)にせず待機
+          modal: "draw-result",          // 【変更】確認モーダルを出す
+          placementTimeLeft: PLACEMENT_LIMIT,
           canHold: false,
         };
       }
@@ -522,9 +553,26 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       });
 
     case "CLOSE_MODAL":
+      // モーダルを閉じた瞬間に、くじの結果が「ハズレ(NONE)」でも「ANY」でもない（＝ブロックが出た）なら、操作開始
+      if (
+        state.modal === "draw-result" && 
+        state.drawnCard !== "NONE" && 
+        state.drawnCard !== "ANY" &&
+        state.drawnCard !== null
+      ) {
+        return {
+          ...state,
+          modal: "none",
+          gameStatus: "placing", // ここでカウント開始！
+        };
+      }
+  
+      // それ以外（ハズレだった時や、通常のモーダル閉じ）
       return {
         ...state,
         modal: "none",
+        // もし ANY 選択後などで status が drawing のままなら idle に戻すなどの処理が必要かも
+        gameStatus: state.gameStatus === "placing" ? "placing" : "idle",
       };
 
     case "RESET_DRAW_TEMP":
